@@ -133,6 +133,11 @@ var uploader = new baidubce.bos.Uploader({
     },
     UploadResumeError: function (_, file, error, event) {
       // 尝试进行断点续传失败时，调用这个函数
+    },
+    GenerateLocalKey:function(file, bucket, object, options){
+      // 如果需要重命名 localStorage 的key值
+      // 返回key
+      return [file, bucket, object].join('&');
     }
   }
 });
