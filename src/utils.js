@@ -89,7 +89,11 @@ exports.isPromise = function (value) {
 };
 
 exports.generateLocalKey = function (option) {
-    return Q.resolve([option.blob.name, option.blob.size, option.chunkSize, option.bucket, option.object].join('&'));
+    return Q.resolve(option);
+};
+
+exports.generateDefaultLocalKey = function (option) {
+    return [option.blob.name, option.blob.size, option.chunkSize, option.bucket, option.object].join('&');
 };
 
 exports.getUploadId = function (key) {

@@ -73,6 +73,7 @@ var kFileUploaded = 'FileUploaded';
 var kUploadPartProgress = 'UploadPartProgress';
 var kUploadResume = 'UploadResume'; // 断点续传
 var kUploadResumeError = 'UploadResumeError'; // 尝试断点续传失败
+var kGenerateLocalKey = 'GenerateLocalKey';// 生成localstorage key
 
 var kError = 'Error';
 var kUploadComplete = 'UploadComplete';
@@ -435,12 +436,15 @@ Uploader.prototype._uploadNextViaMultipart = function (file) {
                 });
             });
             // 全部上传结束后删除localStorage
-            utils.generateLocalKey({
+            var localKeyOption = {
                 blob: file,
                 chunkSize: chunkSize,
                 bucket: bucket,
                 object: object
-            }).then(function (localSaveKey) {
+            };
+            var localKeys = self._invoke(kGenerateLocalKey, [null, file, bucket, object, options]);
+            var localStorageKey = localKeys || utils.generateDefaultLocalKey(localKeyOption);
+            utils.generateLocalKey(localStorageKey).then(function (localSaveKey) {
                 utils.removeUploadId(localSaveKey);
             });
             return self.client.completeMultipartUpload(bucket, object, uploadId, partList);
@@ -476,12 +480,14 @@ Uploader.prototype._initiateMultipartUpload = function (file, chunkSize, bucket,
             });
     }
 
-    var keyOptions = {
+    var localKeyOption = {
         blob: file,
         chunkSize: chunkSize,
         bucket: bucket,
         object: object
     };
+    var localKeys = self._invoke(kGenerateLocalKey, [null, file, bucket, object, options]);
+    var keyOptions = localKeys || utils.generateDefaultLocalKey(localKeyOption);
     var promise = this.options.bos_multipart_auto_continue
         ? utils.generateLocalKey(keyOptions)
         : sdk.Q.resolve(null);
